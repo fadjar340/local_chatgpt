@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.openwebui
+    command: celery -A extensions.worker_tasks worker --loglevel=info
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ./extensions:/app/extensions
+      - ./data:/app/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_MODE=${OLLAMA_MODE:-gpu}
+      - OLLAMA_MODELS=llama3:8b-q4_K_M llava:13b-q4   # <-- dynamic model list
+    volumes:
+      - ./models:/root/.ollama/models
+      - ./entrypoint.sh:/entrypoint.sh:ro             # <-- mount the script
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+
+  openwebui:
+    build:
+      context: .
+      dockerfile: Dockerfile.openwebui
+    container_name: openwebui
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    volumes:
+      - ./extensions:/app/extensions
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      # Controller + Plugins
+      - ENABLE_PLUGIN_LOADER=true
+      - ENABLE_AUTO_CHAINING=true
+      - ENABLE_PARALLEL_AGENTS=false
+      # Agents
+      - ENABLE_MATH_EXECUTOR=true
+      - ENABLE_IMAGE_OCR=true
+      - ENABLE_GRAPH_RENDERER=true
+      - ENABLE_RESEARCH_FETCH=true
+      - ENABLE_SMART_ROUTER=true
+      - ENABLE_SQLITE_LOGGER=true
+      - ENABLE_TEX_EXPORT=true
+      - ENABLE_RAG=true
+      - ENABLE_KICAD_SUPPORT=true
+      # Project Context
+      - PROJECT_NAME=RMFE_Main
+      - SQLITE_LOG_DB=/app/logs/chat_logs.db
+      # Models
+      - GPU_MODEL=llama3:70b
+      - CPU_MODEL=llama3:8b-q4_K_M
+    depends_on:
+      - ollama
+      - redis

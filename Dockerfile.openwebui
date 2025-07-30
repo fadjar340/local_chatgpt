@@ -1,0 +1,44 @@
+FROM ghcr.io/open-webui/open-webui:latest
+
+COPY kicad-cli /usr/local/bin/kicad-cli
+RUN chmod +x /usr/local/bin/kicad-cli
+
+RUN mkdir -p /app/data/image_analysis /app/data/research_papers \
+    /app/data/tex_outputs /app/logs /app/data/rag_store \
+    /app/data/kicad /app/extensions
+
+RUN apt-get update && apt-get install -y \
+    sqlite3 libsqlite3-dev tesseract-ocr libtesseract-dev curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    pillow pytesseract opencv-python-headless pypdf \
+    langchain llama-index sentence-transformers faiss-cpu \
+    matplotlib numpy scipy sympy mpmath sexpdata sqlalchemy \
+    chromadb pandas celery redis arxiv semanticscholar requests
+
+RUN npm install -g @mermaid-js/mermaid-cli
+
+COPY extensions/ /app/extensions/
+
+ENV ENABLE_KICAD_SUPPORT=true
+ENV ENABLE_RAG=true
+ENV ENABLE_TEX_EXPORT=true
+ENV ENABLE_IMAGE_OCR=true
+ENV ENABLE_SMART_ROUTER=true
+ENV ENABLE_GRAPH_RENDERER=true
+ENV ENABLE_MERMAID_RENDERER=true
+ENV ENABLE_MATH_EXECUTOR=true
+ENV ENABLE_RESEARCH_FETCH=true
+ENV ENABLE_SQLITE_LOGGER=true
+ENV ENABLE_PLUGIN_LOADER=true
+ENV SQLITE_DB_PATH=/app/data/events.db
+
+# ✅ Provide our own minimal start.sh as a replacement
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# ✅ Use restored original entrypoint
+ENTRYPOINT ["bash", "/start.sh"]
