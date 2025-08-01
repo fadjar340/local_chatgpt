@@ -10,7 +10,7 @@ This project sets up a **powerful local AI environment** using:
 ---
 
 ## ✅ 1. Project Structure
-
+```
 local_chatgpt/
 ├── docker-compose.yaml
 ├── Dockerfile.openwebui
@@ -35,7 +35,7 @@ local_chatgpt/
 │ └── rag_agent.py
 └── data/
 └── (persistent data, logs, outputs)
-
+```
 ---
 
 ## ✅ 2. Prerequisites
