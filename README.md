@@ -52,15 +52,15 @@ local_chatgpt/
 
 ```bash
 make build
-
+```
 🔹 Start All Services
-
+```
 make up
-
+```
 🔹 Open WebUI
-
+```
 http://localhost:3000
-
+```
 ## ✅ 4. Services Overview
 
 Service Port Purpose
@@ -129,7 +129,7 @@ Scalable worker architecture
 ```
 
 ## ✅ 7. Makefile Commands
-
+```
 Command Description
 make build Build all Docker images
 make up Start all services
@@ -144,13 +144,13 @@ make shell-worker Enter Celery Worker container
 make shell-ollama Enter Ollama container
 make clean Prune unused Docker images/volumes
 make test-math Test math agent via Celery
-
+```
 ## ✅ 8. Testing Celery Agents
 
 Example: Test math agent directly:
-
+```
 make test-math
-
+```
 Expected output:
 
 🧮 Math Agent Result:
@@ -165,9 +165,9 @@ Event logs: /app/data/events.db
 ```
 
 Query logs via Celery task:
-
+```
 docker exec -it celery-worker celery call logger_agent.fetch_logs --args='["RMFE_Main", 5]'
-
+```
 ## ✅ 10. Adding New Agents
 
 ```
